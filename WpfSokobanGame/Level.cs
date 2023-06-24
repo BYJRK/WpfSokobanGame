@@ -122,6 +122,8 @@ internal partial class Level : ObservableObject
 
     internal void MovePlayer(Key key)
     {
+        if (IsWinning)
+            return;
         if (Player is null)
             throw new NullReferenceException("Player is null");
         var (x, y) = (Player.X, Player.Y);
@@ -194,9 +196,12 @@ internal partial class Level : ObservableObject
 
     private void CheckIfWin()
     {
+        if (Crates is null)
+            return;
         if (Crates.All(c => c.IsOnTarget))
         {
             IsWinning = true;
+            CanUndo = false;
         }
     }
 
@@ -238,6 +243,8 @@ internal partial class Level : ObservableObject
         obj.Y -= y;
         if (obj.Type == SpriteType.Player)
             TotalSteps--;
+        else if (obj.Type == SpriteType.Crate)
+            obj.CheckIfOnTarget(Blocks);
         CanUndo = history.Count > 0;
 
         // 如果上一个记录是箱子，那么说明是这次推动的，将会一并推动
